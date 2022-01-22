@@ -1,0 +1,16 @@
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\SpriteEditor.exe.config
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\SpriteEditor.exe
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\SpriteEditor.pdb
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.AssemblyReference.cache
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.SuggestedBindingRedirects.cache
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\MainWindow.g.cs
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\App.g.cs
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor_MarkupCompile.cache
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor_MarkupCompile.lref
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\MainWindow.baml
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.g.resources
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.Properties.Resources.resources
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.GenerateResource.cache
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.CoreCompileInputs.cache
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.exe
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.pdb
