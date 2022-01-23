@@ -5,39 +5,73 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpriteEditor"
         mc:Ignorable="d"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="Редактор спрайтов" WindowState="Maximized" Height="450" Width="800">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
                 <MenuItem Header="Создать спрайтшит" Click="CreateSpriteSheetHandler" />
-                <MenuItem Header="Сохранить спрайтшит" Click="SaveSpriteSheetHandler" />
+                <MenuItem x:Name="saveSpriteSheetBtn" IsEnabled="False" Header="Сохранить спрайтшит" Click="SaveSpriteSheetHandler" />
             </MenuItem>
         </Menu>
         <StackPanel DockPanel.Dock="Top" Height="40" Background="Green">
 
         </StackPanel>
-        <StackPanel DockPanel.Dock="Bottom" Height="25" Background="Blue">
-
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="25" Background="Blue">
+            <StackPanel Margin="25, 4" Orientation="Horizontal">
+                <TextBlock Margin="10, 0" Text="Масштаб" />
+                <ProgressBar Margin="10, 0" Height="5" Width="150" />
+                <TextBlock Margin="10, 0" Text="100%" />
+            </StackPanel>
+            <StackPanel Margin="25, 4" Orientation="Horizontal">
+                <CheckBox x:Name="isDisplayOutline" Margin="10, 0" Click="ToggleSpriteOutlineHandler" />
+                <TextBlock Text="Показывать контур" />
+            </StackPanel>
         </StackPanel>
-        <StackPanel DockPanel.Dock="Left" Width="150" Background="Cyan">
-
-        </StackPanel>
-        <StackPanel DockPanel.Dock="Right" Width="150" Background="Pink">
-
-        </StackPanel>
-        <Canvas x:Name="canvas"  ClipToBounds="True" DockPanel.Dock="Top" Background="Gray">
-            <!--
-            <Image Height="750">
-                <Image.Source>
-                    <BitmapImage UriSource="C:\unity_projects\SpriteCorrector\Assets\Sprites\run.png" />
-                </Image.Source>
-            </Image>
-            <Rectangle Width="150" Height="185" Stroke="LightGreen" />
-            -->
-            <Image x:Name="mainImage" Height="750">
-                
-            </Image>
-        </Canvas>
-        
+        <ScrollViewer DockPanel.Dock="Left">    
+            <StackPanel Width="200" Background="Cyan">
+                <StackPanel Background="LightGray">
+                    <TextBlock Margin="10" Text="Спрайты" />
+                </StackPanel>
+                <StackPanel x:Name="spritesLabels">
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        <ScrollViewer DockPanel.Dock="Right">
+            <StackPanel Width="200" Background="Pink">
+                <Border BorderBrush="Gray" BorderThickness="1">
+                    <StackPanel Background="LightGray">
+                        <TextBlock Margin="10" Text="Настройки" />
+                    </StackPanel>
+                </Border>
+                <Border BorderBrush="Gray" BorderThickness="1, 0, 1, 1">
+                    <StackPanel Orientation="Horizontal" Background="LightGray">
+                        <materialDesign:PackIcon Margin="10" Kind="ArrowDropDown" />
+                        <TextBlock Text="Данные" VerticalAlignment="Center" Margin="10" />
+                    </StackPanel>
+                </Border>
+                <Border BorderBrush="Gray" BorderThickness="1, 0, 1, 1">
+                    <StackPanel Orientation="Horizontal" Background="LightGray">
+                        <materialDesign:PackIcon Margin="10" Kind="ArrowDropDown" />
+                        <TextBlock Text="Текстура" VerticalAlignment="Center" Margin="10" />
+                    </StackPanel>
+                </Border>
+                <Border BorderBrush="Gray" BorderThickness="1, 0, 1, 1">
+                    <StackPanel Orientation="Horizontal" Background="LightGray">
+                        <materialDesign:PackIcon Margin="10" Kind="ArrowDropDown" />
+                        <TextBlock Text="Макет" VerticalAlignment="Center" Margin="10" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        <DockPanel Background="Gray">
+            <ScrollViewer HorizontalScrollBarVisibility="Visible" DockPanel.Dock="Top" VerticalScrollBarVisibility="Visible">
+                <Canvas HorizontalAlignment="Stretch" Margin="50 120" VerticalAlignment="Stretch" x:Name="canvas" DockPanel.Dock="Bottom" ClipToBounds="True">
+                    <Canvas.Background>
+                        <ImageBrush ImageSource="https://thumbs.dreamstime.com/b/%D0%B1%D0%B5%D0%B7%D1%88%D0%BE%D0%B2%D0%BD%D1%8B%D0%B5-loopable-%D0%B0%D0%B1%D1%81%D1%82%D1%80%D0%B0%D0%BA%D1%82%D0%BD%D1%8B%D0%B5-%D1%88%D0%B0%D1%85%D0%BC%D0%B0%D1%82%D1%8B-%D0%B8%D0%BB%D0%B8-%D1%84%D0%BE%D0%BD-%D0%B2%D0%B8%D0%B4%D0%B0-%D1%81%D0%B5%D1%82%D0%BA%D0%B8-png-%D1%81%D0%B5%D1%80%D1%8B%D1%85-180948787.jpg" />
+                    </Canvas.Background>
+                </Canvas>
+            </ScrollViewer>
+        </DockPanel>
     </DockPanel>
 </Window>

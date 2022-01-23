@@ -14,3 +14,9 @@ C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.Generate
 C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.CoreCompileInputs.cache
 C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.exe
 C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.pdb
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\MaterialDesignColors.dll
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\MaterialDesignThemes.Wpf.dll
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\MaterialDesignColors.pdb
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\MaterialDesignThemes.Wpf.pdb
+C:\wpf_projects\SpriteEditor\SpriteEditor\bin\Debug\MaterialDesignThemes.Wpf.xml
+C:\wpf_projects\SpriteEditor\SpriteEditor\obj\Debug\SpriteEditor.csproj.CopyComplete
