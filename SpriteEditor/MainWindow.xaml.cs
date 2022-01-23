@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,9 @@ namespace SpriteEditor
         public Brush initialCanvasBackground;
         public System.Windows.Media.PixelFormat selectedPixelFormat = System.Windows.Media.PixelFormats.Default; 
         public string selectedTextureFile = "";
+        public Brush enabledHeaderBtnColor = System.Windows.Media.Brushes.Blue;
+        public Brush disabledHeaderBtnColor = System.Windows.Media.Brushes.Gray;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -48,23 +52,7 @@ namespace SpriteEditor
 
         private void CreateSpriteSheetHandler(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Multiselect = true;
-            bool? res = ofd.ShowDialog();
-            if (res != false)
-            {
-                Stream[] myStreams;
-                if ((myStreams = ofd.OpenFiles()) != null)
-                {
-                    ClearSpriteSheet();
-                    DrawSpriteSheet(ofd);
-                    ClearSpritesLabels();
-                    DrawSpritesLabels(ofd);
-                    bool isHaveSprites = myStreams.Length >= 1;
-                    ToggleSaveSpriteSheetBtn(isHaveSprites);
-                }
-
-            }
+            CreateSpriteSheet();
         }
 
         private void SaveSpriteSheetHandler(object sender, RoutedEventArgs e)
@@ -233,33 +221,7 @@ namespace SpriteEditor
         {
             foreach (string fileName in ofd.FileNames)
             {
-                StackPanel spriteLabel = new StackPanel();
-                spriteLabel.Orientation = Orientation.Horizontal;
-                spriteLabel.DataContext = fileName;
-                spriteLabel.MouseUp += SelectSpriteLabelHandler;
-                Image spriteLabelIcon = new Image();
-                BitmapImage spriteSource = new BitmapImage();
-                spriteSource.BeginInit();
-                spriteSource.UriSource = new Uri(fileName, UriKind.Absolute);
-                spriteSource.EndInit();
-                spriteLabelIcon.Source = spriteSource;
-                spriteLabelIcon.Width = 20;
-                spriteLabelIcon.Height = 20;
-                spriteLabelIcon.Margin = new Thickness(10);
-                spriteLabel.Children.Add(spriteLabelIcon);
-                TextBlock spriteLabelName = new TextBlock();
-                string onlyFileName = GetTerminatedName(fileName);
-                spriteLabelName.Text = onlyFileName;
-                spriteLabelName.Margin = new Thickness(10);
-                spriteLabel.Children.Add(spriteLabelName);
-                spritesLabels.Children.Add(spriteLabel);
-                ContextMenu spriteLabelContextMenu = new ContextMenu();
-                MenuItem spriteLabelContextMenuItem = new MenuItem();
-                spriteLabelContextMenuItem.Header = "Удалить спрайт";
-                spriteLabelContextMenuItem.DataContext = fileName;
-                spriteLabelContextMenuItem.Click += RemoveSpriteHandler;
-                spriteLabelContextMenu.Items.Add(spriteLabelContextMenuItem);
-                spriteLabel.ContextMenu = spriteLabelContextMenu;
+                CreateSpriteLabel(fileName);
             }
         }
 
@@ -381,9 +343,37 @@ namespace SpriteEditor
             }
         }
 
-        public void ToggleSaveSpriteSheetBtn (bool toggler)
+        public void ToggleProject(bool toggler)
         {
+            saveSpriteSheetLabel.IsEnabled = toggler;
+            removeSpriteBtn.IsEnabled = toggler;
+            addSpriteBtn.IsEnabled = toggler;
+            toggleSpriteSheetSettingsBtn.IsEnabled = toggler;
             saveSpriteSheetBtn.IsEnabled = toggler;
+            closeProjectBtn.IsEnabled = toggler;
+            PackIcon removeSpriteBtnIcon = ((PackIcon)(removeSpriteBtn.Children[0]));
+            PackIcon addSpriteBtnIcon = ((PackIcon)(addSpriteBtn.Children[0]));
+            PackIcon toggleSpriteSheetSettingsBtnIcon = ((PackIcon)(toggleSpriteSheetSettingsBtn.Children[0]));
+            PackIcon saveSpriteSheetBtnIcon = ((PackIcon)(saveSpriteSheetBtn.Children[0]));
+            if (toggler)
+            {
+                openedSprites.Visibility = Visibility.Visible;
+                spriteSheetSettings.Visibility = Visibility.Visible;
+                removeSpriteBtnIcon.Foreground = enabledHeaderBtnColor;
+                addSpriteBtnIcon.Foreground = enabledHeaderBtnColor;
+                toggleSpriteSheetSettingsBtnIcon.Foreground = enabledHeaderBtnColor;
+                saveSpriteSheetBtnIcon.Foreground = enabledHeaderBtnColor;
+            }
+            else
+            {
+                openedSprites.Visibility = Visibility.Collapsed;
+                spriteSheetSettings.Visibility = Visibility.Collapsed;
+                removeSpriteBtnIcon.Foreground = disabledHeaderBtnColor;
+                addSpriteBtnIcon.Foreground = disabledHeaderBtnColor;
+                toggleSpriteSheetSettingsBtnIcon.Foreground = disabledHeaderBtnColor;
+                saveSpriteSheetBtnIcon.Foreground = disabledHeaderBtnColor;
+                ResetSettings();
+            }
         }
 
         public void RemoveSpriteHandler(object sender, RoutedEventArgs e)
@@ -596,7 +586,184 @@ namespace SpriteEditor
                     textureFileName.Text = GetTerminatedName(ofd.FileName);
                 }
             }
+            else
+            {
+                selectedTextureFile = "";
+                textureFileName.Text = "";
+            }
         }
 
+        private void ClearTextureFileHandler(object sender, MouseButtonEventArgs e)
+        {
+            selectedTextureFile = "";
+            textureFileName.Text = "";
+        }
+
+        private void ToggleSpriteSettings(object sender, MouseButtonEventArgs e)
+        {
+            Visibility settingsVisibility = spriteSheetSettings.Visibility;
+            Visibility isVisible = Visibility.Visible;
+            Visibility isHidden = Visibility.Collapsed;
+            bool isSettingsVisible = settingsVisibility == isVisible;
+            bool isCanToggleSettings = saveSpriteSheetLabel.IsEnabled;
+            if (isCanToggleSettings)
+            {
+                if (isSettingsVisible)
+                {
+                    spriteSheetSettings.Visibility = isHidden;
+                }
+                else
+                {
+                    spriteSheetSettings.Visibility = isVisible;
+                }
+            }
+        }
+
+        private void CloseProjectHandler(object sender, RoutedEventArgs e)
+        {
+            ToggleProject(false);
+        }
+
+        public void ResetSettings()
+        {
+            ClearSpriteSheet();
+            ClearSpritesLabels();
+            selectedPixelFormat = System.Windows.Media.PixelFormats.Default;
+            selectedSpriteName = "";
+            selectedTextureFile = "";
+            selectedTextureFormat = "png";
+            opacityLevel.Value = 100;
+            zoomer.Value = 100;
+        }
+
+        public void CreateSpriteSheet()
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Multiselect = true;
+            bool? res = ofd.ShowDialog();
+            if (res != false)
+            {
+                Stream[] myStreams;
+                if ((myStreams = ofd.OpenFiles()) != null)
+                {
+                    ClearSpriteSheet();
+                    DrawSpriteSheet(ofd);
+                    ClearSpritesLabels();
+                    DrawSpritesLabels(ofd);
+                    bool isHaveSprites = myStreams.Length >= 1;
+                    ToggleProject(isHaveSprites);
+                }
+
+            }
+        }
+
+        private void CreateSpriteSheetLabelHandler (object sender, MouseButtonEventArgs e)
+        {
+            CreateSpriteSheet();
+        }
+
+        public void AddSprite()
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            bool? res = ofd.ShowDialog();
+            if (res != false)
+            {
+                Stream myStream;
+                if ((myStream = ofd.OpenFile()) != null)
+                {
+                    string fileName = ofd.FileName;
+                    CreateSpriteLabel(fileName);
+                    CreateSprite(fileName);
+                }
+            }
+        }
+        
+        public void CreateSpriteLabel(string fileName)
+        {
+            StackPanel spriteLabel = new StackPanel();
+            spriteLabel.Orientation = Orientation.Horizontal;
+            spriteLabel.DataContext = fileName;
+            spriteLabel.MouseUp += SelectSpriteLabelHandler;
+            Image spriteLabelIcon = new Image();
+            BitmapImage spriteSource = new BitmapImage();
+            spriteSource.BeginInit();
+            spriteSource.UriSource = new Uri(fileName, UriKind.Absolute);
+            spriteSource.EndInit();
+            spriteLabelIcon.Source = spriteSource;
+            spriteLabelIcon.Width = 20;
+            spriteLabelIcon.Height = 20;
+            spriteLabelIcon.Margin = new Thickness(10);
+            spriteLabel.Children.Add(spriteLabelIcon);
+            TextBlock spriteLabelName = new TextBlock();
+            string onlyFileName = GetTerminatedName(fileName);
+            spriteLabelName.Text = onlyFileName;
+            spriteLabelName.Margin = new Thickness(10);
+            spriteLabel.Children.Add(spriteLabelName);
+            spritesLabels.Children.Add(spriteLabel);
+            ContextMenu spriteLabelContextMenu = new ContextMenu();
+            MenuItem spriteLabelContextMenuItem = new MenuItem();
+            spriteLabelContextMenuItem.Header = "Удалить спрайт";
+            spriteLabelContextMenuItem.DataContext = fileName;
+            spriteLabelContextMenuItem.Click += RemoveSpriteHandler;
+            spriteLabelContextMenu.Items.Add(spriteLabelContextMenuItem);
+            spriteLabel.ContextMenu = spriteLabelContextMenu;
+        }
+
+        public void CreateSprite (string fileName)
+        {
+            float spriteXCoord = 0;
+            float spriteYCoord = 0;
+            List<float> spriteHeights = new List<float>();
+            Rectangle sprite = new Rectangle();
+            sprite.DataContext = fileName.ToString();
+            sprite.MouseUp += SelectSpriteHandler;
+            System.Drawing.Image uploadedImage = System.Drawing.Image.FromFile(fileName);
+            float spriteWidth = uploadedImage.Width;
+            float spriteHeight = uploadedImage.Height;
+            spriteHeights.Add(spriteHeight);
+            bool isWrapSprites = canvas.ActualWidth < spriteXCoord + spriteWidth;
+            if (isWrapSprites)
+            {
+                float maxSpriteHeight = spriteHeights.Max();
+                spriteYCoord += maxSpriteHeight;
+                spriteXCoord = 0;
+            }
+            sprite.Width = spriteWidth;
+            sprite.Height = spriteHeight;
+            Canvas.SetLeft(sprite, spriteXCoord);
+            Canvas.SetTop(sprite, spriteYCoord);
+            ImageBrush spriteBrush = new ImageBrush();
+            BitmapImage spriteSource = new BitmapImage();
+            spriteSource.BeginInit();
+            spriteSource.UriSource = new Uri(fileName, UriKind.Absolute);
+            spriteSource.EndInit();
+            spriteBrush.ImageSource = spriteSource;
+            sprite.Fill = spriteBrush;
+            canvas.Children.Add(sprite);
+            spriteXCoord += spriteWidth;
+            bool isOutlineEnabled = ((bool)(isDisplayOutline.IsChecked));
+            Brush currentSpriteStroke = null;
+            if (isOutlineEnabled)
+            {
+                currentSpriteStroke = spriteBorderColor;
+            }
+            else
+            {
+                currentSpriteStroke = emptyColor;
+            }
+            sprite.Stroke = currentSpriteStroke;
+            ContextMenu spriteContextMenu = new ContextMenu();
+            MenuItem spriteContextMenuItem = new MenuItem();
+            spriteContextMenuItem.Header = "Удалить спрайт";
+            spriteContextMenuItem.DataContext = fileName;
+            spriteContextMenuItem.Click += RemoveSpriteHandler;
+            spriteContextMenu.Items.Add(spriteContextMenuItem);
+            sprite.ContextMenu = spriteContextMenu;
+        }
+
+        private void AddSpriteHandler(object sender, MouseButtonEventArgs e)
+        {
+            AddSprite();
+        }
     }
 }

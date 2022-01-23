@@ -11,28 +11,29 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
                 <MenuItem Header="Создать спрайтшит" Click="CreateSpriteSheetHandler" />
-                <MenuItem x:Name="saveSpriteSheetBtn" IsEnabled="False" Header="Сохранить спрайтшит" Click="SaveSpriteSheetHandler" />
+                <MenuItem x:Name="saveSpriteSheetLabel" IsEnabled="False" Header="Сохранить спрайтшит" Click="SaveSpriteSheetHandler" />
+                <MenuItem x:Name="closeProjectBtn" IsEnabled="False" Header="Закрыть проект" Click="CloseProjectHandler" />
             </MenuItem>
         </Menu>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Height="65" Background="Green">
-            <StackPanel Margin="20, 5">
+            <StackPanel MouseUp="CreateSpriteSheetLabelHandler" Margin="20, 5">
                 <materialDesign:PackIcon Margin="35, 0" Foreground="Blue" Width="35" Height="35" Kind="FolderOutline" />
                 <TextBlock Text="Создать спрайтшит" />
             </StackPanel>
-            <StackPanel Margin="20, 5">
-                <materialDesign:PackIcon Margin="35, 0" Foreground="Blue" Width="40" Height="35" Kind="ContentSave" />
+            <StackPanel x:Name="saveSpriteSheetBtn" IsEnabled="False" Margin="20, 5">
+                <materialDesign:PackIcon Margin="35, 0" Foreground="Gray" Width="40" Height="35" Kind="ContentSave" />
                 <TextBlock Text="Сохранить спрайтшит" />
             </StackPanel>
-            <StackPanel Margin="200, 5, 20, 0" MouseUp="ExpandRemoveSpriteHandler">
-                <materialDesign:PackIcon Margin="20, 0" Foreground="Blue" Width="40" Height="35" Kind="FileImageAdd" />
+            <StackPanel x:Name="addSpriteBtn" Margin="200, 5, 20, 0" IsEnabled="False" MouseUp="AddSpriteHandler">
+                <materialDesign:PackIcon Margin="20, 0" Foreground="Gray" Width="40" Height="35" Kind="FileImageAdd" />
                 <TextBlock Text="Добавить спрайт" />
             </StackPanel>
-            <StackPanel Margin="20, 5" MouseUp="ExpandRemoveSpriteHandler">
-                <materialDesign:PackIcon Margin="20, 0" Foreground="Blue" Width="40" Height="35" Kind="FileImageRemoveOutline" />
+            <StackPanel x:Name="removeSpriteBtn" Margin="20, 5" IsEnabled="False" MouseUp="ExpandRemoveSpriteHandler">
+                <materialDesign:PackIcon Margin="20, 0" Foreground="Gray" Width="40" Height="35" Kind="FileImageRemoveOutline" />
                 <TextBlock Text="Удалить спрайт" />
             </StackPanel>
-            <StackPanel Margin="20, 5" MouseUp="ExpandRemoveSpriteHandler">
-                <materialDesign:PackIcon Margin="30, 0" Foreground="Blue" Width="40" Height="35" Kind="ImageEditOutline" />
+            <StackPanel x:Name="toggleSpriteSheetSettingsBtn" Margin="20, 5" IsEnabled="False" MouseUp="ToggleSpriteSettings">
+                <materialDesign:PackIcon Margin="30, 0" Foreground="Gray" Width="40" Height="35" Kind="ImageEditOutline" />
                 <TextBlock Text="Настройки спрайта" />
             </StackPanel>
             <StackPanel Margin="200, 5, 20, 5" MouseUp="ExpandRemoveSpriteHandler">
@@ -55,7 +56,7 @@
                 <TextBlock Text="Показывать контур" />
             </StackPanel>
         </StackPanel>
-        <ScrollViewer DockPanel.Dock="Left">    
+        <ScrollViewer x:Name="openedSprites" Visibility="Collapsed" DockPanel.Dock="Left">    
             <StackPanel Width="200" Background="Cyan">
                 <StackPanel Background="LightGray">
                     <TextBlock Margin="10" Text="Спрайты" />
@@ -64,7 +65,7 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
-        <ScrollViewer DockPanel.Dock="Right">
+        <ScrollViewer x:Name="spriteSheetSettings" Visibility="Collapsed" DockPanel.Dock="Right">
             <StackPanel Width="265" Background="Pink">
                 <Border BorderBrush="Gray" BorderThickness="1">
                     <StackPanel Background="LightGray">
@@ -95,13 +96,14 @@
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal"  Margin="0, 15">
-                        <TextBlock Text="Файл текстуры" Margin="15, 8" />
-                        <TextBox x:Name="textureFileName" Text="" Margin="15, 8" Width="90" />
-                        <materialDesign:PackIcon MouseUp="SetTextureFileHandler" Margin="10" Kind="Folder" Foreground="Cyan" />
+                        <TextBlock Text="Файл текстуры" Margin="10, 8" />
+                        <TextBox x:Name="textureFileName" IsReadOnly="True" Text="" Margin="10, 8" Width="90" />
+                        <materialDesign:PackIcon MouseUp="ClearTextureFileHandler" Margin="5, 10" Kind="Close" Foreground="Red" />
+                        <materialDesign:PackIcon MouseUp="SetTextureFileHandler" Margin="5, 10" Kind="Folder" Foreground="Cyan" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal"  Margin="0, 15">
                         <TextBlock Text="Уровень непрозр. PNG" Margin="15, 0" />
-                        <Slider Width="75" Value="100" Minimum="1" Maximum="100" ValueChanged="SetImageOpacity" />
+                        <Slider x:Name="opacityLevel" Width="75" Value="100" Minimum="1" Maximum="100" ValueChanged="SetImageOpacity" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal"  Margin="0, 15">
                         <TextBlock Text="Формат пикселя" Margin="15, 0" />
@@ -135,7 +137,7 @@
                 <Canvas x:Name="rawCanvas" Loaded="CanvasInitializedHandler" HorizontalAlignment="Stretch" Margin="50 120" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" ClipToBounds="True">
                     <Viewbox Stretch="Fill" x:Name="zoom">
                         <Viewbox.Child>
-                            <Canvas MouseUp="ResetSelectionHandler" Width="250" Height="70" DockPanel.Dock="Top" x:Name="canvas">
+                            <Canvas MouseUp="ResetSelectionHandler" DockPanel.Dock="Top" x:Name="canvas">
                                 <Canvas.Background>
                                     <ImageBrush ImageSource="https://thumbs.dreamstime.com/b/%D0%B1%D0%B5%D0%B7%D1%88%D0%BE%D0%B2%D0%BD%D1%8B%D0%B5-loopable-%D0%B0%D0%B1%D1%81%D1%82%D1%80%D0%B0%D0%BA%D1%82%D0%BD%D1%8B%D0%B5-%D1%88%D0%B0%D1%85%D0%BC%D0%B0%D1%82%D1%8B-%D0%B8%D0%BB%D0%B8-%D1%84%D0%BE%D0%BD-%D0%B2%D0%B8%D0%B4%D0%B0-%D1%81%D0%B5%D1%82%D0%BA%D0%B8-png-%D1%81%D0%B5%D1%80%D1%8B%D1%85-180948787.jpg" />
                                 </Canvas.Background>
