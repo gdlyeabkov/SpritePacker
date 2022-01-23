@@ -14,13 +14,40 @@
                 <MenuItem x:Name="saveSpriteSheetBtn" IsEnabled="False" Header="Сохранить спрайтшит" Click="SaveSpriteSheetHandler" />
             </MenuItem>
         </Menu>
-        <StackPanel DockPanel.Dock="Top" Height="40" Background="Green">
-
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Height="65" Background="Green">
+            <StackPanel Margin="20, 5">
+                <materialDesign:PackIcon Margin="35, 0" Foreground="Blue" Width="35" Height="35" Kind="FolderOutline" />
+                <TextBlock Text="Создать спрайтшит" />
+            </StackPanel>
+            <StackPanel Margin="20, 5">
+                <materialDesign:PackIcon Margin="35, 0" Foreground="Blue" Width="40" Height="35" Kind="ContentSave" />
+                <TextBlock Text="Сохранить спрайтшит" />
+            </StackPanel>
+            <StackPanel Margin="200, 5, 20, 0" MouseUp="ExpandRemoveSpriteHandler">
+                <materialDesign:PackIcon Margin="20, 0" Foreground="Blue" Width="40" Height="35" Kind="FileImageAdd" />
+                <TextBlock Text="Добавить спрайт" />
+            </StackPanel>
+            <StackPanel Margin="20, 5" MouseUp="ExpandRemoveSpriteHandler">
+                <materialDesign:PackIcon Margin="20, 0" Foreground="Blue" Width="40" Height="35" Kind="FileImageRemoveOutline" />
+                <TextBlock Text="Удалить спрайт" />
+            </StackPanel>
+            <StackPanel Margin="20, 5" MouseUp="ExpandRemoveSpriteHandler">
+                <materialDesign:PackIcon Margin="30, 0" Foreground="Blue" Width="40" Height="35" Kind="ImageEditOutline" />
+                <TextBlock Text="Настройки спрайта" />
+            </StackPanel>
+            <StackPanel Margin="200, 5, 20, 5" MouseUp="ExpandRemoveSpriteHandler">
+                <materialDesign:PackIcon Margin="10, 0" Foreground="Blue" Width="40" Height="35" Kind="School" />
+                <TextBlock Text="Обучение" />
+            </StackPanel>
+            <StackPanel Margin="20, 5" MouseUp="ExpandRemoveSpriteHandler">
+                <materialDesign:PackIcon Margin="0, 0" Foreground="Blue" Width="40" Height="35" Kind="Chat" />
+                <TextBlock Text="Связь" />
+            </StackPanel>
         </StackPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="25" Background="Blue">
             <StackPanel Margin="25, 4" Orientation="Horizontal">
                 <TextBlock Margin="10, 0" Text="Масштаб" />
-                <ProgressBar Margin="10, 0" Height="5" Width="150" />
+                <Slider x:Name="zoomer" MouseUp="InitializeZoomHandler" ValueChanged="SetZoomHandler" Value="100" Minimum="0" Maximum="100" Margin="10, 0" Width="150" />
                 <TextBlock Margin="10, 0" Text="100%" />
             </StackPanel>
             <StackPanel Margin="25, 4" Orientation="Horizontal">
@@ -38,7 +65,7 @@
             </StackPanel>
         </ScrollViewer>
         <ScrollViewer DockPanel.Dock="Right">
-            <StackPanel Width="200" Background="Pink">
+            <StackPanel Width="265" Background="Pink">
                 <Border BorderBrush="Gray" BorderThickness="1">
                     <StackPanel Background="LightGray">
                         <TextBlock Margin="10" Text="Настройки" />
@@ -56,6 +83,45 @@
                         <TextBlock Text="Текстура" VerticalAlignment="Center" Margin="10" />
                     </StackPanel>
                 </Border>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal"  Margin="0, 15">
+                        <TextBlock Text="Формат текстуры" Margin="15, 0" />
+                        <ComboBox SelectionChanged="SetTextureFormatHandler" SelectedIndex="0" Width="70">
+                            <ComboBoxItem Content="PNG-32" />
+                            <ComboBoxItem Content="BMP-32" />
+                            <ComboBoxItem Content="GIF-32" />
+                            <ComboBoxItem Content="JPEG-32" />
+                            <ComboBoxItem Content="TIFF-32" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"  Margin="0, 15">
+                        <TextBlock Text="Файл текстуры" Margin="15, 8" />
+                        <TextBox x:Name="textureFileName" Text="" Margin="15, 8" Width="90" />
+                        <materialDesign:PackIcon MouseUp="SetTextureFileHandler" Margin="10" Kind="Folder" Foreground="Cyan" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"  Margin="0, 15">
+                        <TextBlock Text="Уровень непрозр. PNG" Margin="15, 0" />
+                        <Slider Width="75" Value="100" Minimum="1" Maximum="100" ValueChanged="SetImageOpacity" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"  Margin="0, 15">
+                        <TextBlock Text="Формат пикселя" Margin="15, 0" />
+                        <ComboBox SelectedIndex="0" Width="70" SelectionChanged="SetPixelFormatHandler">
+                            <ComboBoxItem Content="RGBA88888" />
+                            <ComboBoxItem Content="CMYK" />
+                            <ComboBoxItem Content="BGR" />
+                            <ComboBoxItem Content="Оттенки серого" />
+                            <ComboBoxItem Content="Черно-белое" />
+                            <ComboBoxItem Content="Indexed1" />
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"  Margin="0, 15">
+                        <TextBlock Text="Обработка прочности" Margin="15, 0" />
+                        <ComboBox SelectedIndex="0" Width="70" SelectionChanged="SetTransparentProcessingHandler">
+                            <ComboBoxItem Content="Удалять прозрачные пиксели" />
+                            <ComboBoxItem Content="Оставить прозрачные пиксели" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
                 <Border BorderBrush="Gray" BorderThickness="1, 0, 1, 1">
                     <StackPanel Orientation="Horizontal" Background="LightGray">
                         <materialDesign:PackIcon Margin="10" Kind="ArrowDropDown" />
@@ -66,10 +132,16 @@
         </ScrollViewer>
         <DockPanel Background="Gray">
             <ScrollViewer HorizontalScrollBarVisibility="Visible" DockPanel.Dock="Top" VerticalScrollBarVisibility="Visible">
-                <Canvas HorizontalAlignment="Stretch" Margin="50 120" VerticalAlignment="Stretch" x:Name="canvas" DockPanel.Dock="Bottom" ClipToBounds="True">
-                    <Canvas.Background>
-                        <ImageBrush ImageSource="https://thumbs.dreamstime.com/b/%D0%B1%D0%B5%D0%B7%D1%88%D0%BE%D0%B2%D0%BD%D1%8B%D0%B5-loopable-%D0%B0%D0%B1%D1%81%D1%82%D1%80%D0%B0%D0%BA%D1%82%D0%BD%D1%8B%D0%B5-%D1%88%D0%B0%D1%85%D0%BC%D0%B0%D1%82%D1%8B-%D0%B8%D0%BB%D0%B8-%D1%84%D0%BE%D0%BD-%D0%B2%D0%B8%D0%B4%D0%B0-%D1%81%D0%B5%D1%82%D0%BA%D0%B8-png-%D1%81%D0%B5%D1%80%D1%8B%D1%85-180948787.jpg" />
-                    </Canvas.Background>
+                <Canvas x:Name="rawCanvas" Loaded="CanvasInitializedHandler" HorizontalAlignment="Stretch" Margin="50 120" VerticalAlignment="Stretch" DockPanel.Dock="Bottom" ClipToBounds="True">
+                    <Viewbox Stretch="Fill" x:Name="zoom">
+                        <Viewbox.Child>
+                            <Canvas MouseUp="ResetSelectionHandler" Width="250" Height="70" DockPanel.Dock="Top" x:Name="canvas">
+                                <Canvas.Background>
+                                    <ImageBrush ImageSource="https://thumbs.dreamstime.com/b/%D0%B1%D0%B5%D0%B7%D1%88%D0%BE%D0%B2%D0%BD%D1%8B%D0%B5-loopable-%D0%B0%D0%B1%D1%81%D1%82%D1%80%D0%B0%D0%BA%D1%82%D0%BD%D1%8B%D0%B5-%D1%88%D0%B0%D1%85%D0%BC%D0%B0%D1%82%D1%8B-%D0%B8%D0%BB%D0%B8-%D1%84%D0%BE%D0%BD-%D0%B2%D0%B8%D0%B4%D0%B0-%D1%81%D0%B5%D1%82%D0%BA%D0%B8-png-%D1%81%D0%B5%D1%80%D1%8B%D1%85-180948787.jpg" />
+                                </Canvas.Background>
+                            </Canvas>
+                        </Viewbox.Child>
+                    </Viewbox>
                 </Canvas>
             </ScrollViewer>
         </DockPanel>

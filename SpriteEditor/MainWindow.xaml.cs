@@ -27,7 +27,15 @@ namespace SpriteEditor
         public Brush spriteBorderColor;
         public Brush spriteLabelBackgroundColor;
         public Brush emptyColor;
-
+        public string selectedSpriteName = "";
+        public double canvasInitialWidth;
+        public double canvasInitialHeight;
+        public bool isZoomPermission = false;
+        public string selectedTextureFormat = "png";
+        public string selectedTransparentPixelsProcessing = "remove";
+        public Brush initialCanvasBackground;
+        public System.Windows.Media.PixelFormat selectedPixelFormat = System.Windows.Media.PixelFormats.Default; 
+        public string selectedTextureFile = "";
         public MainWindow()
         {
             InitializeComponent();
@@ -61,24 +69,73 @@ namespace SpriteEditor
 
         private void SaveSpriteSheetHandler(object sender, RoutedEventArgs e)
         {
-            RenderTargetBitmap rtb = new RenderTargetBitmap((int)canvas.RenderSize.Width, (int)canvas.RenderSize.Height, 96d, 96d, System.Windows.Media.PixelFormats.Default);
+            TransparentProcessing();
+            RenderTargetBitmap rtb = new RenderTargetBitmap((int)canvas.RenderSize.Width, (int)canvas.RenderSize.Height, 96d, 96d, selectedPixelFormat);
             rtb.Render(canvas);
             var crop = new CroppedBitmap(rtb, new Int32Rect(50, 50, 250, 250));
-            BitmapEncoder pngEncoder = new PngBitmapEncoder();
-            pngEncoder.Frames.Add(BitmapFrame.Create(rtb));
+            BitmapEncoder imageEncoder = null;
+            bool isPngTextureFormat = selectedTextureFormat == "png";
+            bool isBmpTextureFormat = selectedTextureFormat == "bmp";
+            bool isGifTextureFormat = selectedTextureFormat == "gif";
+            bool isJpegTextureFormat = selectedTextureFormat == "jpeg";
+            bool isTiffTextureFormat = selectedTextureFormat == "tiff";
+            string defaultExt = "";
+            string filterFiles = "";
+            if (isPngTextureFormat)
+            {
+                imageEncoder = new PngBitmapEncoder();
+                defaultExt = ".png";
+                filterFiles = "PNG images (.png)|*.png";
+            }
+            else if (isBmpTextureFormat)
+            {
+                imageEncoder = new BmpBitmapEncoder();
+                defaultExt = ".bmp";
+                filterFiles = "BMP images (.bmp)|*.bmp";
+            }
+            else if (isGifTextureFormat)
+            {
+                imageEncoder = new GifBitmapEncoder();
+                defaultExt = ".gif";
+                filterFiles = "GIF images (.gif)|*.gif";
+            }
+            else if (isJpegTextureFormat)
+            {
+                imageEncoder = new JpegBitmapEncoder();
+                defaultExt = ".jpeg";
+                filterFiles = "JPEG images (.png)|*.jpeg";
+            }
+            else if (isTiffTextureFormat)
+            {
+                imageEncoder = new TiffBitmapEncoder();
+                defaultExt = ".tiff";
+                filterFiles = "TIFF images (.tiff)|*.tiff";
+            }
+            imageEncoder.Frames.Add(BitmapFrame.Create(rtb));
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.FileName = "Новый спрайтшит";
-            sfd.DefaultExt = ".png";
-            sfd.Filter = "PNG images (.png)|*.png";
-            bool? res = sfd.ShowDialog();
+            sfd.DefaultExt = defaultExt;
+            sfd.Filter = filterFiles;
+            bool isHideDialog = selectedTextureFile.Length >= 1;
+            bool? res = false;
+            if (isHideDialog)
+            {
+                res = true;
+                sfd.FileName = selectedTextureFile;
+            }
+            else
+            {
+                res = sfd.ShowDialog();
+            }            
             if (res != false)
             {
-
-                using (Stream s = File.Open(sfd.FileName, FileMode.OpenOrCreate))
+                using (Stream saveStream = File.Open(sfd.FileName, FileMode.OpenOrCreate))
                 {
-                    pngEncoder.Save(s);
+                    imageEncoder.Save(saveStream);
                 }
             }
+            Thread.Sleep(1000);
+            ClearTransparentProcessing();
         }
 
         public void DrawSpriteSheet(OpenFileDialog ofd)
@@ -126,6 +183,13 @@ namespace SpriteEditor
                     currentSpriteStroke = emptyColor;
                 }
                 sprite.Stroke = currentSpriteStroke;
+                ContextMenu spriteContextMenu = new ContextMenu();
+                MenuItem spriteContextMenuItem = new MenuItem();
+                spriteContextMenuItem.Header = "Удалить спрайт";
+                spriteContextMenuItem.DataContext = fileName;
+                spriteContextMenuItem.Click += RemoveSpriteHandler;
+                spriteContextMenu.Items.Add(spriteContextMenuItem);
+                sprite.ContextMenu = spriteContextMenu;
             }
         }
 
@@ -138,9 +202,15 @@ namespace SpriteEditor
         {
             Rectangle sprite = ((Rectangle)(sender));
             string spriteName = sprite.DataContext.ToString();
+            SetCurrentSprite(spriteName);
             ClearSpritesSelection();
             SelectSprite(sprite);
             SelectSpriteLabel(spriteName);
+        }
+
+        public void SetCurrentSprite (string spriteName)
+        {
+            selectedSpriteName = spriteName;
         }
 
         public void ClearSpritesSelection()
@@ -183,6 +253,13 @@ namespace SpriteEditor
                 spriteLabelName.Margin = new Thickness(10);
                 spriteLabel.Children.Add(spriteLabelName);
                 spritesLabels.Children.Add(spriteLabel);
+                ContextMenu spriteLabelContextMenu = new ContextMenu();
+                MenuItem spriteLabelContextMenuItem = new MenuItem();
+                spriteLabelContextMenuItem.Header = "Удалить спрайт";
+                spriteLabelContextMenuItem.DataContext = fileName;
+                spriteLabelContextMenuItem.Click += RemoveSpriteHandler;
+                spriteLabelContextMenu.Items.Add(spriteLabelContextMenuItem);
+                spriteLabel.ContextMenu = spriteLabelContextMenu;
             }
         }
 
@@ -245,7 +322,8 @@ namespace SpriteEditor
         public void SelectSpriteLabelHandler (object sender, RoutedEventArgs e)
         {
             StackPanel sprite = ((StackPanel)(sender));
-            string spriteName = sprite.DataContext.ToString();
+            object rawSpriteName = sprite.DataContext;
+            string spriteName = rawSpriteName.ToString();
             ClearSpritesSelection();
             Rectangle foundedSprite = null;
             bool isSpriteFound = false;
@@ -261,6 +339,7 @@ namespace SpriteEditor
             }
             if (isSpriteFound)
             {
+                SetCurrentSprite(spriteName);
                 SelectSprite(foundedSprite);
                 SelectSpriteLabel(spriteName);
             }
@@ -305,6 +384,218 @@ namespace SpriteEditor
         public void ToggleSaveSpriteSheetBtn (bool toggler)
         {
             saveSpriteSheetBtn.IsEnabled = toggler;
+        }
+
+        public void RemoveSpriteHandler(object sender, RoutedEventArgs e)
+        {
+            MenuItem removeSpriteBtn = ((MenuItem)(sender));
+            object rawSpriteName = removeSpriteBtn.DataContext;
+            string spriteName = rawSpriteName.ToString();
+            RemoveSprite(spriteName);
+        }
+
+        public void RemoveSprite(string spriteName)
+        {
+            RemoveSpriteLabel(spriteName);
+            RemoveSpriteFromSpriteSheet(spriteName);
+            selectedSpriteName = "";
+        }
+
+        public void RemoveSpriteFromSpriteSheet(string spriteName)
+        {
+            foreach (Rectangle sprite in canvas.Children)
+            {
+                object spriteData = sprite.DataContext;
+                string currentSpriteName = spriteData.ToString();
+                bool isSpritesNamesMatch = currentSpriteName == spriteName;
+                if (isSpritesNamesMatch)
+                {
+                    canvas.Children.Remove(sprite);
+                    break;
+                }
+            }
+        }
+
+        public void RemoveSpriteLabel(string spriteName)
+        {
+            foreach (StackPanel spriteLabel in spritesLabels.Children)
+            {
+                object spriteLabelData = spriteLabel.DataContext;
+                string spriteLabelName = spriteLabelData.ToString();
+                bool isSpritesNamesMatch = spriteLabelName == spriteName;
+                if (isSpritesNamesMatch)
+                {
+                    spritesLabels.Children.Remove(spriteLabel);
+                    break;
+                }
+            }
+        }
+
+        private void ExpandRemoveSpriteHandler(object sender, MouseButtonEventArgs e)
+        {
+            bool isSpriteSelected = selectedSpriteName.Length >= 1;
+            if (isSpriteSelected)
+            {
+                RemoveSprite(selectedSpriteName);
+            }
+        }
+
+        private void SetZoomHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Slider slider = ((Slider)(sender));
+            if (isZoomPermission)
+            {
+                double zoomRatio = Math.Floor(slider.Value) / 100;
+                zoom.Width = canvasInitialWidth * zoomRatio;
+                zoom.Height = canvasInitialHeight * zoomRatio;
+            }
+        }
+
+        private void CanvasInitializedHandler(object sender, RoutedEventArgs e)
+        {
+            canvasInitialWidth = rawCanvas.ActualWidth;
+            canvasInitialHeight = rawCanvas.ActualHeight;
+            canvas.Width = rawCanvas.ActualWidth;
+            canvas.Height = rawCanvas.ActualHeight;
+            isZoomPermission = true;
+            initialCanvasBackground = canvas.Background;
+        }
+
+        private void InitializeZoomHandler(object sender, MouseButtonEventArgs e)
+        {
+            isZoomPermission = true;
+        }
+
+        private void ResetSelectionHandler(object sender, MouseButtonEventArgs e)
+        {
+            ClearSpritesSelection();
+        }
+
+        private void SetTextureFormatHandler(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox comboBox = ((ComboBox)(sender));
+            int textureFormatIndex = comboBox.SelectedIndex;
+            bool isPngTextureFormat = textureFormatIndex == 0;
+            bool isBmpTextureFormat = textureFormatIndex == 1;
+            bool isGifTextureFormat = textureFormatIndex == 2;
+            bool isJpegTextureFormat = textureFormatIndex == 3;
+            bool isTiffTextureFormat = textureFormatIndex == 4;
+            if (isPngTextureFormat)
+            {
+                selectedTextureFormat = "png";
+            }
+            else if (isBmpTextureFormat)
+            {
+                selectedTextureFormat = "bmp";
+            }
+            else if (isGifTextureFormat)
+            {
+                selectedTextureFormat = "gif";
+            }
+            else if (isJpegTextureFormat)
+            {
+                selectedTextureFormat = "jpeg";
+            }
+            else if (isTiffTextureFormat)
+            {
+                selectedTextureFormat = "tiff";
+            }
+        }
+
+        private void SetImageOpacity(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (isZoomPermission)
+            {
+                Slider slider = ((Slider)(sender));
+                double opacityRatio = slider.Value / 100;
+                canvas.Opacity = opacityRatio;
+            }
+        }
+
+        private void SetTransparentProcessingHandler(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox comboBox = ((ComboBox)(sender));
+            int transparentPixelsProcessingIndex = comboBox.SelectedIndex;
+            bool isRemoveTransparentPixels = transparentPixelsProcessingIndex == 0;
+            bool isLeftTransparentPixels = transparentPixelsProcessingIndex == 1;
+            if (isRemoveTransparentPixels)
+            {
+                selectedTransparentPixelsProcessing = "remove";
+            }
+            else if (isLeftTransparentPixels)
+            {
+                selectedTransparentPixelsProcessing = "left";
+            }
+
+        }
+
+        public void TransparentProcessing ()
+        {
+            bool isRemoveTransparentPixels = selectedTransparentPixelsProcessing == "remove";
+            bool isLeftTransparentPixels = selectedTransparentPixelsProcessing == "left";
+            if (isRemoveTransparentPixels)
+            {
+                canvas.Background = emptyColor;
+            }
+            else if (isLeftTransparentPixels)
+            {
+                // делать ничего не нужно (оставляем пиксели такими какие отображаются на канвасе)
+            }
+        }
+        public void ClearTransparentProcessing()
+        {
+            canvas.Background = initialCanvasBackground;
+        }
+
+        private void SetPixelFormatHandler(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox comboBox = ((ComboBox)(sender));
+            int pixelFormatIndex = comboBox.SelectedIndex;
+            bool isRgbPixelFormat = pixelFormatIndex == 0;
+            bool isCmykPixelFormat = pixelFormatIndex == 1;
+            bool isBgrPixelFormat = pixelFormatIndex == 2;
+            bool isGrayscalePixelFormat = pixelFormatIndex == 3;
+            bool isBlackWhitePixelFormat = pixelFormatIndex == 4;
+            bool isIndexedPixelFormat = pixelFormatIndex == 5;
+            if (isRgbPixelFormat)
+            {
+                selectedPixelFormat = System.Windows.Media.PixelFormats.Default;
+            }
+            else if (isCmykPixelFormat)
+            {
+                selectedPixelFormat = System.Windows.Media.PixelFormats.Cmyk32;
+            }
+            else if (isBgrPixelFormat)
+            {
+                selectedPixelFormat = System.Windows.Media.PixelFormats.Bgr101010;
+            }
+            else if (isGrayscalePixelFormat)
+            {
+                selectedPixelFormat = System.Windows.Media.PixelFormats.Gray16;
+            }
+            else if (isBlackWhitePixelFormat)
+            {
+                selectedPixelFormat = System.Windows.Media.PixelFormats.BlackWhite;
+            }
+            else if (isIndexedPixelFormat)
+            {
+                selectedPixelFormat = System.Windows.Media.PixelFormats.Indexed1;
+            }
+        }
+
+        private void SetTextureFileHandler(object sender, MouseButtonEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            bool? res = ofd.ShowDialog();
+            if (res != false)
+            {
+                Stream myStream;
+                if ((myStream = ofd.OpenFile()) != null)
+                {
+                    selectedTextureFile = ofd.FileName;
+                    textureFileName.Text = GetTerminatedName(ofd.FileName);
+                }
+            }
         }
 
     }
